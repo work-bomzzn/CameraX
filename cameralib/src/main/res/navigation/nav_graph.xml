@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/permissionsFragment"
-        android:name="com.evolve.cameralib.ui.PermissionsFragment"
+        android:name="com.bomzzn.cameralib.ui.PermissionsFragment"
         android:label="PermissionsFragment">
         <action
             android:id="@+id/action_permissionsFragment_to_cameraFragment"
@@ -14,7 +14,7 @@
     </fragment>
     <fragment
         android:id="@+id/cameraFragment"
-        android:name="com.evolve.cameralib.ui.CameraFragment"
+        android:name="com.bomzzn.cameralib.ui.CameraFragment"
         android:label="CameraFragment">
         <action
             android:id="@+id/action_cameraFragment_to_permissionsFragment"

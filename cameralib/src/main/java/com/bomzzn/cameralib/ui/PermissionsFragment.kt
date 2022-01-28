@@ -1,4 +1,4 @@
-package com.evolve.cameralib.ui
+package com.bomzzn.cameralib.ui
 
 import android.Manifest
 import android.content.Context
@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
-import com.evolve.cameralib.R
+import com.bomzzn.cameralib.R
 
 private const val PERMISSIONS_REQUEST_CODE = 10
 private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)

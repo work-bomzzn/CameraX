@@ -1,4 +1,4 @@
-package com.evolve.cameralib.utils
+package com.bomzzn.cameralib.utils
 
 object Constants {
     const val FILENAME = "yyyy-MM-dd-HH-mm-ss-SSS"

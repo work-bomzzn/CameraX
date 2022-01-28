@@ -1,4 +1,4 @@
-package com.evolve.cameralib
+package com.bomzzn.cameralib
 
 import android.app.Activity
 import android.content.Intent
@@ -8,9 +8,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 
 /**
- * Create EvolveImagePicker object
+ * Create CameraImagePicker object
  * */
-class EvolveImagePicker {
+class CameraXImagePicker {
 
     companion object {
         const val KEY_FRONT_CAMERA = "frontCamera"
@@ -20,7 +20,7 @@ class EvolveImagePicker {
         const val KEY_SCREEN_ORIENTATION = "screenOrientation"
 
         /**
-         * Use this to use EvolveImagePicker in Activity Class
+         * Use this to use CameraXImagePicker in Activity Class
          *
          * @param activity AppCompatActivity Instance
          */
@@ -73,9 +73,9 @@ class EvolveImagePicker {
             screenOrientation: Int
         ) {
             val imagePickerIntent: Intent = if (fragment != null) {
-                Intent(fragment?.requireActivity(), EvolveCameraActivity::class.java)
+                Intent(fragment?.requireActivity(), CameraXActivity::class.java)
             } else {
-                Intent(activity, EvolveCameraActivity::class.java)
+                Intent(activity, CameraXActivity::class.java)
             }
             imagePickerIntent.putExtra(KEY_CAMERA_CAPTURE_FORCE, forceImageCapture)
             imagePickerIntent.putExtra(KEY_FRONT_CAMERA, enabledFrontCamera)

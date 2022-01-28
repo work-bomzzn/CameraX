@@ -1,7 +1,6 @@
-package com.evolve.evolvecamera
+package com.bomzzn.camera
 
 import android.content.Intent
-import android.graphics.ImageFormat
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
@@ -9,7 +8,7 @@ import android.widget.ImageView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.evolve.cameralib.EvolveImagePicker
+import com.bomzzn.cameralib.CameraXImagePicker
 import com.squareup.picasso.Picasso
 
 
@@ -18,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var picture: ImageView
     private var imageUri: Uri? = null
 
-    private val evolveActivityResultLauncher: ActivityResultLauncher<Intent> =
+    private val activityResultLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -36,10 +35,10 @@ class MainActivity : AppCompatActivity() {
         val btnCamera: Button = findViewById(R.id.btnCamera)
         btnCamera.setOnClickListener {
             // launch camera
-            EvolveImagePicker
+            CameraXImagePicker
                 .with(this)
                 .start(
-                    evolveActivityResultLauncher,
+                    activityResultLauncher,
                     forceImageCapture = true // optional parameter
                 )
         }

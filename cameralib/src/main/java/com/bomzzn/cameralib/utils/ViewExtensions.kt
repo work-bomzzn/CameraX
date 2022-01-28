@@ -1,4 +1,4 @@
-package com.evolve.cameralib.utils
+package com.bomzzn.cameralib.utils
 
 import android.os.Build
 import android.view.DisplayCutout

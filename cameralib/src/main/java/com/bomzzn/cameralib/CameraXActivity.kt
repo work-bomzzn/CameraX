@@ -1,4 +1,4 @@
-package com.evolve.cameralib
+package com.bomzzn.cameralib
 
 import android.content.pm.ActivityInfo
 import android.os.Build
@@ -10,24 +10,24 @@ import androidx.camera.core.CameraXConfig
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.evolve.cameralib.databinding.ActivityEvolveCameraBinding
+import com.bomzzn.cameralib.databinding.ActivityCameraXBinding
 
 private const val IMMERSIVE_FLAG_TIMEOUT = 500L
 
-class EvolveCameraActivity : AppCompatActivity(),
+class CameraXActivity : AppCompatActivity(),
     CameraXConfig.Provider {
 
-    private lateinit var binding: ActivityEvolveCameraBinding
+    private lateinit var binding: ActivityCameraXBinding
     private val screenOrientation: Int by lazy {
         intent?.extras?.getInt(
-            EvolveImagePicker.KEY_SCREEN_ORIENTATION,
+            CameraXImagePicker.KEY_SCREEN_ORIENTATION,
             ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
         )!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityEvolveCameraBinding.inflate(layoutInflater)
+        binding = ActivityCameraXBinding.inflate(layoutInflater)
         setContentView(binding.root)
         try {
             this.supportActionBar?.hide()

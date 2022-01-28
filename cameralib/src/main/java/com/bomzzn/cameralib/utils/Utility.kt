@@ -1,13 +1,13 @@
-package com.evolve.cameralib.utils
+package com.bomzzn.cameralib.utils
 
 import android.content.Context
 import android.os.Environment
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
-import com.evolve.cameralib.R
-import com.evolve.cameralib.utils.Constants.RATIO_16_9_VALUE
-import com.evolve.cameralib.utils.Constants.RATIO_4_3_VALUE
+import com.bomzzn.cameralib.R
+import com.bomzzn.cameralib.utils.Constants.RATIO_16_9_VALUE
+import com.bomzzn.cameralib.utils.Constants.RATIO_4_3_VALUE
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat

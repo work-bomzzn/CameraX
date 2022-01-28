@@ -1,4 +1,4 @@
-package com.evolve.evolvecamera
+package com.bomzzn.camera
 
 import org.junit.Test
 

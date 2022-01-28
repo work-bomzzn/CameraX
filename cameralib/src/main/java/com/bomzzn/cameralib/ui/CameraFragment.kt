@@ -1,4 +1,4 @@
-package com.evolve.cameralib.ui
+package com.bomzzn.cameralib.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -18,20 +18,18 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import androidx.window.WindowManager
-import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_CAMERA_CAPTURE_FORCE
-import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_FILENAME
-import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_FRONT_CAMERA
-import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_IMAGE_CAPTURE_FORMAT
-import com.evolve.cameralib.R
-import com.evolve.cameralib.databinding.CameraUiContainerBinding
-import com.evolve.cameralib.databinding.FragmentCameraBinding
-import com.evolve.cameralib.utils.aspectRatio
-import com.evolve.cameralib.utils.createImageFile
-import com.evolve.cameralib.utils.hasBackCamera
-import com.evolve.cameralib.utils.hasFrontCamera
+import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_CAMERA_CAPTURE_FORCE
+import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_FILENAME
+import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_FRONT_CAMERA
+import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_IMAGE_CAPTURE_FORMAT
+import com.bomzzn.cameralib.databinding.CameraUiContainerBinding
+import com.bomzzn.cameralib.databinding.FragmentCameraBinding
+import com.bomzzn.cameralib.utils.createImageFile
+import com.bomzzn.cameralib.utils.hasBackCamera
+import com.bomzzn.cameralib.utils.hasFrontCamera
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
 
 /**
  * Main fragment for this app. Implements all camera operations including:
@@ -50,7 +48,6 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
-    private lateinit var windowManager: WindowManager
     private var deviceOrientation = OrientationEventListener.ORIENTATION_UNKNOWN
 
     private val forceImageCapture: Boolean by lazy {
@@ -147,7 +144,10 @@ class CameraFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (!PermissionsFragment.hasPermissions(requireContext())) {
-            Navigation.findNavController(requireActivity(), R.id.fragment_container).navigate(
+            Navigation.findNavController(
+                requireActivity(),
+                com.bomzzn.cameralib.R.id.fragment_container
+            ).navigate(
                 CameraFragmentDirections.actionCameraFragmentToPermissionsFragment()
             )
             return
@@ -168,11 +168,6 @@ class CameraFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
-        windowManager = try {
-            WindowManager(view.context)
-        } catch (e: Exception) {
-            WindowManager(requireContext())
-        }
         // Wait for the views to be properly laid out
         binding!!.viewFinder.post {
             // Build UI controls
@@ -255,13 +250,10 @@ class CameraFragment : Fragment() {
 
     /** Declare and bind preview, capture and analysis use cases */
     private fun bindCameraUseCases() {
+        val metrics = requireContext().resources.displayMetrics
+        var screenAspectRatio: Int =
+            metrics.heightPixels / metrics.widthPixels        // Get screen metrics used to setup camera for full screen resolution
 
-        // Get screen metrics used to setup camera for full screen resolution
-        val metrics = windowManager.getCurrentWindowMetrics().bounds
-        Log.d(TAG, "Screen metrics: ${metrics.width()} x ${metrics.height()}")
-
-        val screenAspectRatio = aspectRatio(metrics.width(), metrics.height())
-        Log.d(TAG, "Preview aspect ratio: $screenAspectRatio")
 
         val rotation = binding!!.viewFinder.display.rotation
 
@@ -521,11 +513,11 @@ class CameraFragment : Fragment() {
     }
 
     private fun readyBg() {
-        cameraUiContainerBinding?.cameraCaptureButton?.setBackgroundResource(R.drawable.ic_shutter_ready)
+        cameraUiContainerBinding?.cameraCaptureButton?.setBackgroundResource(com.bomzzn.cameralib.R.drawable.ic_shutter_ready)
     }
 
     private fun warningBg() {
-        cameraUiContainerBinding?.cameraCaptureButton?.setBackgroundResource(R.drawable.ic_shutter_warning)
+        cameraUiContainerBinding?.cameraCaptureButton?.setBackgroundResource(com.bomzzn.cameralib.R.drawable.ic_shutter_warning)
     }
 
     private fun enableCaptureBtn() {
