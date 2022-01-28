@@ -2,40 +2,36 @@ package com.evolve.cameralib.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.ImageFormat
-import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.FLASH_MODE_AUTO
 import androidx.camera.core.impl.utils.Exif
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import androidx.window.WindowManager
-import com.evolve.cameralib.R
-import com.evolve.cameralib.databinding.CameraUiContainerBinding
-import com.evolve.cameralib.databinding.FragmentCameraBinding
-import com.evolve.cameralib.utils.*
-import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_CAMERA_CAPTURE_FORCE
 import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_FILENAME
 import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_FRONT_CAMERA
 import com.evolve.cameralib.EvolveImagePicker.Companion.KEY_IMAGE_CAPTURE_FORMAT
+import com.evolve.cameralib.R
+import com.evolve.cameralib.databinding.CameraUiContainerBinding
+import com.evolve.cameralib.databinding.FragmentCameraBinding
+import com.evolve.cameralib.utils.aspectRatio
+import com.evolve.cameralib.utils.createImageFile
+import com.evolve.cameralib.utils.hasBackCamera
+import com.evolve.cameralib.utils.hasFrontCamera
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
  * Main fragment for this app. Implements all camera operations including:
@@ -172,8 +168,11 @@ class CameraFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
-        windowManager = WindowManager(view.context)
-
+        windowManager = try {
+            WindowManager(view.context)
+        } catch (e: Exception) {
+            WindowManager(requireContext())
+        }
         // Wait for the views to be properly laid out
         binding!!.viewFinder.post {
             // Build UI controls
