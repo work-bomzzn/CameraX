@@ -13,11 +13,8 @@ import androidx.fragment.app.Fragment
 class CameraXImagePicker {
 
     companion object {
-        const val KEY_FRONT_CAMERA = "frontCamera"
-        const val KEY_CAMERA_CAPTURE_FORCE = "forceCameraCapture"
         const val KEY_FILENAME = "IMG_FILENAME"
         const val KEY_IMAGE_CAPTURE_FORMAT = "imageCaptureFormat"
-        const val KEY_SCREEN_ORIENTATION = "screenOrientation"
         const val KEY_EXPOSER = "exposerValue"
 
         /**
@@ -49,31 +46,22 @@ class CameraXImagePicker {
 
         fun start(
             launcher: ActivityResultLauncher<Intent>,
-            forceImageCapture: Boolean = true,
-            enabledFrontCamera: Boolean = true,
             fileName: String = "",
             imageCaptureFormat: Int = ImageFormat.JPEG,
-            screenOrientation: Int = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR,
             exposerValue: Int = 0,
         ) {
             startActivity(
                 launcher,
-                forceImageCapture,
-                enabledFrontCamera,
                 fileName,
                 imageCaptureFormat,
-                screenOrientation,
                 exposerValue
             )
         }
 
         private fun startActivity(
             launcher: ActivityResultLauncher<Intent>,
-            forceImageCapture: Boolean,
-            enabledFrontCamera: Boolean,
             fileName: String,
             imageCaptureFormat: Int,
-            screenOrientation: Int,
             exposerValue: Int,
         ) {
             val imagePickerIntent: Intent = if (fragment != null) {
@@ -81,11 +69,8 @@ class CameraXImagePicker {
             } else {
                 Intent(activity, CameraXActivity::class.java)
             }
-            imagePickerIntent.putExtra(KEY_CAMERA_CAPTURE_FORCE, forceImageCapture)
-            imagePickerIntent.putExtra(KEY_FRONT_CAMERA, enabledFrontCamera)
             imagePickerIntent.putExtra(KEY_FILENAME, fileName)
             imagePickerIntent.putExtra(KEY_IMAGE_CAPTURE_FORMAT, imageCaptureFormat)
-            imagePickerIntent.putExtra(KEY_SCREEN_ORIENTATION, screenOrientation)
             imagePickerIntent.putExtra(KEY_EXPOSER, exposerValue)
             launcher.launch(imagePickerIntent)
         }

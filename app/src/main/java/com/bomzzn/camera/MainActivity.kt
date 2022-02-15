@@ -40,8 +40,6 @@ class MainActivity : AppCompatActivity() {
                 .with(this)
                 .start(
                     activityResultLauncher,
-                    forceImageCapture = true,
-                    screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
                     exposerValue = -5
                 )
         }

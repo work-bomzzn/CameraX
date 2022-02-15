@@ -23,5 +23,4 @@
                 android:value="true" />
         </activity>
     </application>
-
 </manifest>

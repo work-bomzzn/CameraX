@@ -3,7 +3,6 @@ package com.bomzzn.cameralib.ui
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.ImageFormat
 import android.net.Uri
 import android.os.Bundle
@@ -13,15 +12,12 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.camera.core.*
 import androidx.camera.core.ImageCapture.FLASH_MODE_AUTO
-import androidx.camera.core.impl.utils.Exif
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_CAMERA_CAPTURE_FORCE
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_EXPOSER
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_FILENAME
-import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_FRONT_CAMERA
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_IMAGE_CAPTURE_FORMAT
 import com.bomzzn.cameralib.databinding.CameraUiContainerBinding
 import com.bomzzn.cameralib.databinding.FragmentCameraBinding
@@ -49,14 +45,7 @@ class CameraFragment : Fragment() {
     private var imageCapture: ImageCapture? = null
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
-    private var deviceOrientation = OrientationEventListener.ORIENTATION_UNKNOWN
 
-    private val forceImageCapture: Boolean by lazy {
-        activity?.intent?.extras?.getBoolean(KEY_CAMERA_CAPTURE_FORCE) == true
-    }
-    private val frontCameraEnable: Boolean by lazy {
-        activity?.intent?.extras?.getBoolean(KEY_FRONT_CAMERA) == true
-    }
     private val imgFileName: String by lazy {
         activity?.intent?.extras?.getString(KEY_FILENAME, "")!!
     }
@@ -70,60 +59,8 @@ class CameraFragment : Fragment() {
     /** Blocking camera operations are performed using this executor */
     private lateinit var cameraExecutor: ExecutorService
 
-    private val orientationEventListener by lazy {
-        object : OrientationEventListener(
-            requireContext()
-        ) {
-            override fun onOrientationChanged(orientation: Int) {
-                println("AAA:: orientation: $orientation")
-                if (orientation == ORIENTATION_UNKNOWN) {
-                    enableCaptureBtn()
-                    showSuccessToast()
-                    readyBg()
-                    return
-                }
-                deviceOrientation = orientation
-                /*  val rotation = when (orientation) {
-                      in 45 until 135 -> Surface.ROTATION_270
-                      in 135 until 225 -> Surface.ROTATION_180
-                      in 225 until 315 -> Surface.ROTATION_90
-                      else -> Surface.ROTATION_0
-                  }
-                  imageCapture?.targetRotation = rotation*/
-                val isCaptureReady = when (orientation) {
-                   /* in 0..10 -> true
-                    in 85..95 -> true
-                    in 175..185 -> true*/
-                    in 265..275 -> true
-                    else -> false
-                }
-                if (!forceImageCapture) return
-                if (isCaptureReady) {
-                    enableCaptureBtn()
-                    showSuccessToast()
-                    readyBg()
-                } else {
-                    disableCaptureBtn()
-                    showWarningToast()
-                    warningBg()
-                }
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        orientationEventListener.enable()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        orientationEventListener.disable()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // OnBackPress callback
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 requireActivity().finish()
@@ -162,8 +99,6 @@ class CameraFragment : Fragment() {
         binding = null
         cameraUiContainerBinding = null
         super.onDestroyView()
-
-        // Shut down our background executor
         cameraExecutor.shutdown()
     }
 
@@ -172,33 +107,19 @@ class CameraFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         cameraExecutor = Executors.newSingleThreadExecutor()
-        // Wait for the views to be properly laid out
         binding!!.viewFinder.post {
-            // Build UI controls
             updateCameraUi()
-
-            // Set up the camera and its use cases
             setUpCamera()
         }
 
-        // Listen to tap events on the viewfinder and set them as focus regions
         binding!!.viewFinder.setOnTouchListener { _: View, motionEvent: MotionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> return@setOnTouchListener true
                 MotionEvent.ACTION_UP -> {
-                    // Get the MeteringPointFactory from PreviewView
                     val factory = binding!!.viewFinder.meteringPointFactory
-
-                    // Create a MeteringPoint from the tap coordinates
                     val point = factory.createPoint(motionEvent.x, motionEvent.y)
-
-                    // Create a MeteringAction from the MeteringPoint, you can configure it to specify the metering mode
                     val action = FocusMeteringAction.Builder(point).build()
-
-                    // Trigger the focus and metering. The method returns a ListenableFuture since the operation
-                    // is asynchronous. You can use it get notified when the focus is successful or if it fails.
                     camera!!.cameraControl.startFocusAndMetering(action)
-
                     return@setOnTouchListener true
                 }
                 else -> return@setOnTouchListener false
@@ -206,54 +127,23 @@ class CameraFragment : Fragment() {
         }
 
     }
-
-    /**
-     * Inflate camera controls and update the UI manually upon config changes to avoid removing
-     * and re-adding the view finder from the view hierarchy; this provides a seamless rotation
-     * transition on devices that support it.
-     *
-     * NOTE: The flag is supported starting in Android 8 but there still is a small flash on the
-     * screen for devices that run Android 9 or below.
-     */
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-
-        // Rebind the camera with the updated display metrics
-        bindCameraUseCases()
-
-        // Enable or disable switching between cameras
-        updateCameraSwitchButton()
-
-        updateCameraUi()
-    }
     // endregion
 
     // region Camera View code
-    /** Initialize CameraX, and prepare to bind the camera use cases  */
+    /** Initialize CameraX, and epare to bind the camera use cases  */
     private fun setUpCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
-
-            // CameraProvider
             cameraProvider = cameraProviderFuture.get()
-
-            // Select lensFacing depending on the available cameras
             lensFacing = when {
                 hasBackCamera(cameraProvider!!) -> CameraSelector.LENS_FACING_BACK
                 hasFrontCamera(cameraProvider!!) -> CameraSelector.LENS_FACING_FRONT
                 else -> throw IllegalStateException("Back and front camera are unavailable")
             }
-
-            // Enable or disable switching between cameras
             updateCameraSwitchButton()
-
-            // Build and bind the camera use cases
             bindCameraUseCases()
             camera!!.cameraControl.setExposureCompensationIndex(exposer)
                 .addListener({
-                    // Get the current exposure compensation index, it may be
-                    // different from the asked value in case this request was
-                    // canceled by a newer setting request.
                     val currentExposureIndex =
                         camera!!.cameraInfo.exposureState.exposureCompensationIndex
                 }, cameraExecutor)
@@ -264,35 +154,21 @@ class CameraFragment : Fragment() {
     private fun bindCameraUseCases() {
         val metrics = requireContext().resources.displayMetrics
         var screenAspectRatio: Int =
-            metrics.heightPixels / metrics.widthPixels        // Get screen metrics used to setup camera for full screen resolution
-
-
+            metrics.heightPixels / metrics.widthPixels
         val rotation = binding!!.viewFinder.display.rotation
-
-        // CameraProvider
         val cameraProvider = cameraProvider
             ?: throw IllegalStateException("Camera initialization failed.")
-
-        // CameraSelector
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
 
-        // Preview
         preview = Preview.Builder()
-            // We request aspect ratio but no resolution
             .setTargetAspectRatio(screenAspectRatio)
-            // Set initial target rotation
             .setTargetRotation(rotation)
             .build()
 
-        // ImageCapture
         try {
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                // We request aspect ratio but no resolution to match preview config, but letting
-                // CameraX optimize for whatever specific resolution best fits our use cases
                 .setTargetAspectRatio(screenAspectRatio)
-                // Set initial target rotation, we will have to call this again if rotation changes
-                // during the lifecycle of this use case
                 .setTargetRotation(rotation)
                 .setFlashMode(FLASH_MODE_AUTO)
                 .setBufferFormat(imageCaptureFormat)
@@ -305,17 +181,13 @@ class CameraFragment : Fragment() {
             Log.d(TAG, "bindCameraUseCases: imagecaptureformat error: ${e.localizedMessage}")
         }
 
-        // Must unbind the use-cases before rebinding them
         cameraProvider.unbindAll()
 
         try {
-            // A variable number of use-cases can be passed here -
-            // camera provides access to CameraControl & CameraInfo
             camera = cameraProvider.bindToLifecycle(
                 this, cameraSelector, preview, imageCapture
             )
 
-            // Attach the viewfinder's surface provider to preview use case
             preview?.setSurfaceProvider(binding!!.viewFinder.surfaceProvider)
             observeCameraState(camera?.cameraInfo!!)
         } catch (exc: Exception) {
@@ -420,8 +292,6 @@ class CameraFragment : Fragment() {
 
     /** Method used to re-draw the camera UI controls, called every time configuration changes. */
     private fun updateCameraUi() {
-
-        // Remove previous UI if any
         cameraUiContainerBinding?.root?.let {
             binding!!.root.removeView(it)
         }
@@ -432,24 +302,15 @@ class CameraFragment : Fragment() {
             true
         )
         cameraUiContainerBinding?.cameraCaptureButton?.setOnClickListener {
-            // Get a stable reference of the modifiable image capture use case
             imageCapture?.let { imageCapture ->
-
-                // Create output file to hold the image
                 val photoFile = createImageFile(requireContext(), imgFileName)
-
-                // Setup image capture metadata
                 val metadata = ImageCapture.Metadata().apply {
-                    // Mirror image when using the front camera
                     isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
                 }
-
-                // Create output options object which contains file + metadata
                 val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
                     .setMetadata(metadata)
                     .build()
 
-                // Setup image capture listener which is triggered after photo has been taken
                 imageCapture.takePicture(
                     outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
                         override fun onError(exc: ImageCaptureException) {
@@ -459,12 +320,6 @@ class CameraFragment : Fragment() {
                         override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                             val savedUri = output.savedUri ?: Uri.fromFile(photoFile)
                             Log.d(TAG, "Photo capture succeeded: $savedUri")
-
-                            val exif = Exif.createFromFile(photoFile)
-                            val rotation = exif.rotation
-                            Log.d("EXIF::Rotation", "onImageSaved: rotation:: $rotation")
-                            println("AAA:: $rotation")
-
                             val intent = Intent()
                             intent.data = savedUri
                             requireActivity().setResult(Activity.RESULT_OK, intent)
@@ -474,10 +329,7 @@ class CameraFragment : Fragment() {
             }
         }
 
-        // Setup for button used to switch cameras
         cameraUiContainerBinding?.cameraSwitchButton?.let {
-
-            // Disable the button until the camera is set up
             it.isEnabled = false
             it.setOnClickListener {
                 lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
@@ -485,16 +337,9 @@ class CameraFragment : Fragment() {
                 } else {
                     CameraSelector.LENS_FACING_FRONT
                 }
-                // Re-bind use cases to update selected camera
                 bindCameraUseCases()
             }
         }
-        /*
-        if (forceImageCapture) {
-            cameraUiContainerBinding?.cameraCaptureButton?.visibility = View.VISIBLE
-        } else {
-            cameraUiContainerBinding?.cameraCaptureButton?.visibility = View.GONE
-        }*/
     }
 
     /** Enabled or disabled a button to switch cameras depending on the available cameras */
@@ -502,41 +347,9 @@ class CameraFragment : Fragment() {
         try {
             cameraUiContainerBinding?.cameraSwitchButton?.isEnabled =
                 hasBackCamera(cameraProvider!!) || hasFrontCamera(cameraProvider!!)
-
-            if (frontCameraEnable) {
-                cameraUiContainerBinding?.cameraSwitchButton?.visibility = View.VISIBLE
-            } else {
-                cameraUiContainerBinding?.cameraSwitchButton?.visibility = View.GONE
-            }
         } catch (exception: CameraInfoUnavailableException) {
             cameraUiContainerBinding?.cameraSwitchButton?.isEnabled = false
         }
     }
     // endregion
-
-    private fun showSuccessToast() {
-        cameraUiContainerBinding?.warningView?.layoutWarning?.visibility = View.GONE
-        cameraUiContainerBinding?.successView?.layoutSuccess?.visibility = View.VISIBLE
-    }
-
-    private fun showWarningToast() {
-        cameraUiContainerBinding?.successView?.layoutSuccess?.visibility = View.GONE
-        cameraUiContainerBinding?.warningView?.layoutWarning?.visibility = View.VISIBLE
-    }
-
-    private fun readyBg() {
-        cameraUiContainerBinding?.cameraCaptureButton?.setBackgroundResource(com.bomzzn.cameralib.R.drawable.ic_shutter_ready)
-    }
-
-    private fun warningBg() {
-        cameraUiContainerBinding?.cameraCaptureButton?.setBackgroundResource(com.bomzzn.cameralib.R.drawable.ic_shutter_warning)
-    }
-
-    private fun enableCaptureBtn() {
-        cameraUiContainerBinding?.cameraCaptureButton?.isEnabled = true
-    }
-
-    private fun disableCaptureBtn() {
-        cameraUiContainerBinding?.cameraCaptureButton?.isEnabled = false
-    }
 }
