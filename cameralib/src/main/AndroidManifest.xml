@@ -12,11 +12,9 @@
     <application>
         <activity
             android:name="com.bomzzn.cameralib.CameraXActivity"
-            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="true"
             android:hardwareAccelerated="true"
-            android:resizeableActivity="true"
-            android:rotationAnimation="seamless"
+            android:screenOrientation="portrait"
             tools:targetApi="O">
 
             <!-- Declare notch support -->

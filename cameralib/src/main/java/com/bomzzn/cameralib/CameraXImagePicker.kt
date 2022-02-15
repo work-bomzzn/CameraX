@@ -18,6 +18,7 @@ class CameraXImagePicker {
         const val KEY_FILENAME = "IMG_FILENAME"
         const val KEY_IMAGE_CAPTURE_FORMAT = "imageCaptureFormat"
         const val KEY_SCREEN_ORIENTATION = "screenOrientation"
+        const val KEY_EXPOSER = "exposerValue"
 
         /**
          * Use this to use CameraXImagePicker in Activity Class
@@ -52,7 +53,8 @@ class CameraXImagePicker {
             enabledFrontCamera: Boolean = true,
             fileName: String = "",
             imageCaptureFormat: Int = ImageFormat.JPEG,
-            screenOrientation: Int = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR
+            screenOrientation: Int = ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR,
+            exposerValue: Int = 0,
         ) {
             startActivity(
                 launcher,
@@ -60,7 +62,8 @@ class CameraXImagePicker {
                 enabledFrontCamera,
                 fileName,
                 imageCaptureFormat,
-                screenOrientation
+                screenOrientation,
+                exposerValue
             )
         }
 
@@ -70,7 +73,8 @@ class CameraXImagePicker {
             enabledFrontCamera: Boolean,
             fileName: String,
             imageCaptureFormat: Int,
-            screenOrientation: Int
+            screenOrientation: Int,
+            exposerValue: Int,
         ) {
             val imagePickerIntent: Intent = if (fragment != null) {
                 Intent(fragment?.requireActivity(), CameraXActivity::class.java)
@@ -82,6 +86,7 @@ class CameraXImagePicker {
             imagePickerIntent.putExtra(KEY_FILENAME, fileName)
             imagePickerIntent.putExtra(KEY_IMAGE_CAPTURE_FORMAT, imageCaptureFormat)
             imagePickerIntent.putExtra(KEY_SCREEN_ORIENTATION, screenOrientation)
+            imagePickerIntent.putExtra(KEY_EXPOSER, exposerValue)
             launcher.launch(imagePickerIntent)
         }
     }

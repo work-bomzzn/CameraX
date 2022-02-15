@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_CAMERA_CAPTURE_FORCE
+import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_EXPOSER
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_FILENAME
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_FRONT_CAMERA
 import com.bomzzn.cameralib.CameraXImagePicker.Companion.KEY_IMAGE_CAPTURE_FORMAT
@@ -62,6 +63,9 @@ class CameraFragment : Fragment() {
     private val imageCaptureFormat: Int by lazy {
         activity?.intent?.extras?.getInt(KEY_IMAGE_CAPTURE_FORMAT, ImageFormat.JPEG)!!
     }
+    private val exposer: Int by lazy {
+        activity?.intent?.extras?.getInt(KEY_EXPOSER, 0)!!
+    }
 
     /** Blocking camera operations are performed using this executor */
     private lateinit var cameraExecutor: ExecutorService
@@ -79,17 +83,17 @@ class CameraFragment : Fragment() {
                     return
                 }
                 deviceOrientation = orientation
-                val rotation = when (orientation) {
-                    in 45 until 135 -> Surface.ROTATION_270
-                    in 135 until 225 -> Surface.ROTATION_180
-                    in 225 until 315 -> Surface.ROTATION_90
-                    else -> Surface.ROTATION_0
-                }
-                imageCapture?.targetRotation = rotation
+                /*  val rotation = when (orientation) {
+                      in 45 until 135 -> Surface.ROTATION_270
+                      in 135 until 225 -> Surface.ROTATION_180
+                      in 225 until 315 -> Surface.ROTATION_90
+                      else -> Surface.ROTATION_0
+                  }
+                  imageCapture?.targetRotation = rotation*/
                 val isCaptureReady = when (orientation) {
-                    in 0..10 -> true
+                   /* in 0..10 -> true
                     in 85..95 -> true
-                    in 175..185 -> true
+                    in 175..185 -> true*/
                     in 265..275 -> true
                     else -> false
                 }
@@ -245,6 +249,14 @@ class CameraFragment : Fragment() {
 
             // Build and bind the camera use cases
             bindCameraUseCases()
+            camera!!.cameraControl.setExposureCompensationIndex(exposer)
+                .addListener({
+                    // Get the current exposure compensation index, it may be
+                    // different from the asked value in case this request was
+                    // canceled by a newer setting request.
+                    val currentExposureIndex =
+                        camera!!.cameraInfo.exposureState.exposureCompensationIndex
+                }, cameraExecutor)
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 

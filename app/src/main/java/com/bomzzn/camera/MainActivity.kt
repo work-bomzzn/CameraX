@@ -1,6 +1,7 @@
 package com.bomzzn.camera
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
@@ -39,7 +40,9 @@ class MainActivity : AppCompatActivity() {
                 .with(this)
                 .start(
                     activityResultLauncher,
-                    forceImageCapture = true // optional parameter
+                    forceImageCapture = true,
+                    screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+                    exposerValue = -5
                 )
         }
     }
